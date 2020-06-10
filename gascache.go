@@ -1,6 +1,10 @@
 package gas
 
-import "sync"
+import (
+	"fmt"
+	"log"
+	"sync"
+)
 
 type Getter interface {
 	Get(key string) ([]byte, error)
@@ -27,5 +31,49 @@ var (
 
 //Constructor
 func NewGroup(name string, cacheByte int64, getter Getter) *Group {
-	
+	if getter == nil {
+		panic("nil Getter")
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	g := &Group{
+		name: name,
+		getter: getter,
+		mainCache: cache{cacheBytes: cacheByte},
+	}
+	groups[name] = g
+	return g
+}
+
+func GetGroup(name string) *Group {
+	mu.RLock()
+	g := groups[name]
+	mu.RUnlock()
+	return g
+}
+
+func (g *Group)Get(key string) (ByteView, error) {
+	if key == "" {
+		return ByteView{}, fmt.Errorf("key is required")
+	}
+
+	if v, ok := g.mainCache.get(key); ok {
+		log.Println("[Gascache] hit")
+		return v, nil
+	}
+
+	return g.load(key)
+}
+
+func (g *Group)load(key string)(ByteView, error) {
+	return g.getlocal(key)
+}
+
+func (g *Group)getlocal(key string)(ByteView, error) {
+	bytes, err := g.getter.Get(key)
+	if err != nil {
+		return ByteView{}, err
+	}
+	value := ByteView{b : byteClone(bytes)}
+
 }
