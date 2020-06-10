@@ -1,4 +1,4 @@
-package gas
+package lru
 
 import (
 	"testing"
