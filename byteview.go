@@ -18,6 +18,10 @@ func (v ByteView) ByteSlice() []byte {
 	return byteClone(v.b)
 }
 
+func (v ByteView) String() string {
+	return string(v.b)
+}
+
 func byteClone(b []byte) []byte {
 	c := make([]byte, len(b))
 	copy(c, b)

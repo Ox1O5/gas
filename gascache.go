@@ -66,14 +66,19 @@ func (g *Group)Get(key string) (ByteView, error) {
 }
 
 func (g *Group)load(key string)(ByteView, error) {
-	return g.getlocal(key)
+	return g.getLocal(key)
 }
 
-func (g *Group)getlocal(key string)(ByteView, error) {
+func (g *Group)getLocal(key string)(ByteView, error) {
 	bytes, err := g.getter.Get(key)
 	if err != nil {
 		return ByteView{}, err
 	}
 	value := ByteView{b : byteClone(bytes)}
+	g.populateCache(key, value)
+	return value, nil
+}
 
+func(g *Group)populateCache(key string, value ByteView) {
+	g.mainCache.add(key, value)
 }
