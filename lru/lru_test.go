@@ -6,14 +6,14 @@ import (
 
 type String string
 
-func (s String)Len() int{
+func (s String) Len() int {
 	return len(s)
 }
 
-var getTests = []struct{
-	name string
-	keyToAdd interface{}
-	keyToGet interface{}
+var getTests = []struct {
+	name       string
+	keyToAdd   interface{}
+	keyToGet   interface{}
 	expectedOK bool
 }{
 	{"string_hit", "key1", "key1", true},
@@ -23,7 +23,7 @@ var getTests = []struct{
 func TestCache_Add(t *testing.T) {
 	c := New(int64(0), nil)
 	var expectedNbyte int64 = 0
-	for _, tt :=  range getTests {
+	for _, tt := range getTests {
 		c.Add(tt.keyToAdd.(string), String("1234"))
 		expectedNbyte += int64(len(tt.keyToAdd.(string)) + String("1234").Len())
 	}
@@ -49,11 +49,9 @@ func TestCache_Get(t *testing.T) {
 	}
 }
 
-
-
 func TestCache_RemoveOldest(t *testing.T) {
 	var nbyte int64 = 0
-	for _, tt :=  range getTests {
+	for _, tt := range getTests {
 		nbyte += int64(len(tt.keyToAdd.(string)) + String("1234").Len())
 	}
 
@@ -66,5 +64,3 @@ func TestCache_RemoveOldest(t *testing.T) {
 		t.Fatalf("RemoveOldsest key1 failed")
 	}
 }
-
-

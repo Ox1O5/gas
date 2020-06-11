@@ -6,9 +6,9 @@ import "container/list"
 type Cache struct {
 	//maxBytes等于0表示没有限制
 	maxBytes int64
-	nbytes int64
-	ll *list.List
-	cache map[string]*list.Element
+	nbytes   int64
+	ll       *list.List
+	cache    map[string]*list.Element
 	// entry被移除的回调函数，（可选函数，可以为nil)
 	OnEviced func(key string, value Value)
 }
@@ -20,22 +20,22 @@ type Value interface {
 
 //一条记录,作为双链表list的结点，保存key方便从map里删除
 type entry struct {
-	key string
+	key   string
 	value Value
 }
 
 //Cache构造函数
-func New(maxBytes int64, onEviced func(string, Value)) *Cache  {
+func New(maxBytes int64, onEviced func(string, Value)) *Cache {
 	return &Cache{
 		maxBytes: maxBytes,
-		ll: list.New(),
-		cache: make(map[string]*list.Element),
+		ll:       list.New(),
+		cache:    make(map[string]*list.Element),
 		OnEviced: onEviced,
 	}
 }
 
 //Add 增，新增记录，并移动到队尾
-func (c *Cache)Add(key string, value Value) {
+func (c *Cache) Add(key string, value Value) {
 	if elem, hit := c.cache[key]; hit {
 		c.ll.MoveToBack(elem)
 		kv := elem.Value.(*entry)
@@ -47,7 +47,7 @@ func (c *Cache)Add(key string, value Value) {
 		c.nbytes += int64(len(key)) + int64(value.Len())
 	}
 
-	for c.maxBytes !=0 && c.nbytes > c.maxBytes {
+	for c.maxBytes != 0 && c.nbytes > c.maxBytes {
 		c.RemoveOldest()
 	}
 }
@@ -67,7 +67,7 @@ func (c *Cache) RemoveOldest() {
 }
 
 //Get 查找链表中结点，并移动到队尾表示刚访问过
-func (c *Cache)Get(key string) (value Value, ok bool) {
+func (c *Cache) Get(key string) (value Value, ok bool) {
 	if elem, hit := c.cache[key]; hit {
 		c.ll.MoveToBack(elem)
 		kv := elem.Value.(*entry)
@@ -76,7 +76,6 @@ func (c *Cache)Get(key string) (value Value, ok bool) {
 	return
 }
 
-func (c *Cache)Len() int {
+func (c *Cache) Len() int {
 	return c.ll.Len()
 }
-

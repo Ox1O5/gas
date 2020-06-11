@@ -2,14 +2,12 @@ package gas
 
 //用一个只读的[]byte切片包装真实缓存值
 
-
-
-type ByteView struct{
+type ByteView struct {
 	b []byte
 }
 
 //返回缓存大小
-func (v ByteView)Len() int {
+func (v ByteView) Len() int {
 	return len(v.b)
 }
 

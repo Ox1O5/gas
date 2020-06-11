@@ -18,8 +18,7 @@ func TestGetterFunc_Get(t *testing.T) {
 	}
 }
 
-
-var db = map[string] string {
+var db = map[string]string{
 	"Tom":  "630",
 	"Jack": "589",
 	"Sam":  "567",
@@ -27,7 +26,7 @@ var db = map[string] string {
 
 func TestGroup_Get(t *testing.T) {
 	loadCounts := make(map[string]int, len(db))
-	gas := NewGroup("scores", 2 << 10, GetterFunc(
+	gas := NewGroup("scores", 2<<10, GetterFunc(
 		func(key string) ([]byte, error) {
 			log.Println("[SlowDB]search key", key)
 			if v, ok := db[key]; ok {
@@ -41,7 +40,7 @@ func TestGroup_Get(t *testing.T) {
 		}))
 
 	for k, v := range db {
-		if view, err := gas.Get(k); err != nil || view.String()!=v {
+		if view, err := gas.Get(k); err != nil || view.String() != v {
 			t.Fatalf("failed to get value of %s", k)
 		}
 		if _, err := gas.Get(k); err != nil || loadCounts[k] > 1 {
