@@ -2,6 +2,7 @@ package gas
 
 import (
 	"fmt"
+	"github.com/Ox1O5/gas/singleflight"
 	"log"
 	"sync"
 )
@@ -22,6 +23,7 @@ type Group struct {
 	getter    Getter
 	mainCache cache
 	peers     PeerPicker
+	loader *singleflight.Group
 }
 
 var (
@@ -40,6 +42,7 @@ func NewGroup(name string, cacheByte int64, getter Getter) *Group {
 		name:      name,
 		getter:    getter,
 		mainCache: cache{cacheBytes: cacheByte},
+		loader: &singleflight.Group{},
 	}
 	groups[name] = g
 	return g
@@ -73,16 +76,22 @@ func (g *Group) RegisterPeers(peers PeerPicker)  {
 	g.peers = peers
 }
 
-func (g *Group) load(key string) (ByteView, error) {
-	if g.peers != nil {
-		if peer, ok := g.peers.PickPeer(key); ok {
-			if value, err := g.getFromPeer(peer ,key); err == nil {
-				return value, nil
+func (g *Group) load(key string) (value ByteView, err error) {
+	iview, err :=g.loader.Do(key, func() (interface{}, error){
+		if g.peers != nil {
+			if peer, ok := g.peers.PickPeer(key); ok {
+				if value, err := g.getFromPeer(peer ,key); err == nil {
+					return value, nil
+				}
+				log.Println("[GasCache] Failed to get from peer", err)
 			}
-			log.Println("[GasCache] Failed to get from peer")
 		}
+		return g.getLocal(key)
+	})
+	if err == nil {
+		return iview.(ByteView), nil
 	}
-	return g.getLocal(key)
+	return 
 }
 
 func (g *Group) getFromPeer(peer PeerGetter, key string) (ByteView, error)  {
